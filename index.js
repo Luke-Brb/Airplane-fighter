@@ -49,7 +49,7 @@ window.onload = function() {
 	board.height = boardHeight;
 	context = board.getContext("2d"); //used for drawing on the board
 
-	//draw and load image-plane
+	//load and draw image-plane
 	planeImg = new Image();
 	planeImg.src = "./airplane2.png";
 	planeImg.onload = function() {
@@ -74,59 +74,10 @@ function update() {
 	// (re)draw the plane
 	context.drawImage(planeImg, plane.x, plane.y, plane.width, plane.height);
 
-	//draw the enemy
-	for (let i = 0; i < enemiesArray.length; ++i) {
-		let enemies = enemiesArray[i];
-		if (enemies.alive) {
-			enemies.y += enemiesVelocityY;
-			context.drawImage(enemiesImg, enemies.x, enemies.y, enemies.width, enemies.height);
-		}
-		
-		if (enemies.y >= plane.y) {
-			console.log("loop enemies");
-			// enemiesArray.forEach(enemies => {
-			// 	if (enemies.alive) {
-			// 		//enemies.y += enemiesVelocityY;
-			// 		context.drawImage(enemiesImg, enemies.x, enemies.y, enemies.width, enemies.height);
-			// 	}
-			// });
-			enemiesArray = []; // incerc ca la linia 135 -> if (enemiesCount == 0)
-			createEnemies(); // doar ca imi recreaza matricea de inamici completa, nu doar cu cei cu 'alive : true'
-							 // trebuie sa revad cum functia 'createEnemies()' ia val liniei si coloanei de sus -> studiez aici
-		}
-	}
-
-	//bullets
-	for (let i = 0; i < bulletArray.length; ++i) {
-		bullet = bulletArray[i];
-		bullet.y += bulletVelocityY;
-		context.fillStyle = 'red';
-		context.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-
-		//bullet collision with enemies
-		for (let j = 0; j < enemiesArray.length; ++j) {
-			let enemies = enemiesArray[j];
-			if (!bullet.used && enemies.alive && detectCollisionBullet(bullet, enemies)) {
-				bullet.used = true;
-				enemies.alive = false;
-				--enemiesCount;
-				++score;
-			}
-		}
-	}
-
-	//Airplane collision with enemies
-	for (let j = 0; j < enemiesArray.length; ++j) {
-		let enemies = enemiesArray[j];
-		if (enemies.alive && detectCollisionEnemies(plane, enemies)) {
-			console.log("Collision");
-			stopTime = Date.now();
-			endTime = Math.round((stopTime - startTime) / 1000);
-			gameOver = true;
-		}
-	}
+	drawTheEnemy();
+	drawTheBullets();
+	enemiesCollision();
 	
-
 	//clear the bullet
 	while (bulletArray.length > 0 && (bulletArray[0].used || bulletArray[0].y < 0)) {
 		bulletArray.shift(); //removes the first bullet element of the array  
@@ -144,13 +95,68 @@ function update() {
 	}
 
 	//score
-	context.fillStyle="red";
-	context.font="20px courier";
+	context.fillStyle = "black";
+	context.font = "20px courier";
 	context.fillText("Enemies downed " + score, 5, 20);
 
-	context.fillStyle="blue";
-	context.font="20px courier";
+	context.fillStyle = "black";
+	context.font = "20px courier";
 	context.fillText("in a number of seconds equal to " + endTime, 250, 20);
+
+	context.fillStyle = "green";
+	context.font = "20px courier";
+	context.fillText("Enemies left " + enemiesCount, 5, 45);
+}
+
+function drawTheEnemy() {
+	for (let i = 0; i < enemiesArray.length; ++i) {
+		let enemies = enemiesArray[i];
+		if (enemies.alive) {
+			enemies.y += enemiesVelocityY;
+			context.drawImage(enemiesImg, enemies.x, enemies.y, enemies.width, enemies.height);
+		}
+		if (enemies.y >= plane.y) {
+			filterAndResetEnemies();
+			//reDrawTheEnemy();
+		}
+	}
+}
+
+function drawTheBullets() {
+	for (let i = 0; i < bulletArray.length; ++i) {
+		bullet = bulletArray[i];
+		bullet.y += bulletVelocityY;
+		context.fillStyle = 'red';
+		context.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+		//bullet collision with enemies
+		for (let j = 0; j < enemiesArray.length; ++j) {
+			let enemies = enemiesArray[j];
+			if (!bullet.used && enemies.alive && detectCollisionBullet(bullet, enemies)) {
+				bullet.used = true;
+				enemies.alive = false;
+				--enemiesCount;
+				++score;
+			}
+		}
+	}
+}
+
+function enemiesCollision() {
+	//Airplane collision with enemies
+	for (let j = 0; j < enemiesArray.length; ++j) {
+		let enemies = enemiesArray[j];
+		if (enemies.alive && detectCollisionEnemies(plane, enemies)) {
+			stopTime = Date.now();
+			endTime = Math.round((stopTime - startTime) / 1000);
+			gameOver = true;
+		}
+	}
+	if (gameOver) {
+		context.fillStyle="red";
+		context.font="100px courier";
+		context.fillText("GAME OVER", 70, 300);
+	}
 }
 
 function movePlane(e) {
@@ -196,10 +202,25 @@ function createEnemies() {
 	}
 	enemiesCount = enemiesArray.length;
 }
-function reCreateEnemies() {
-	enemiesArray = [];
 
+function filterAndResetEnemies() {
+	// Filter the enemiesArray to keep only those enemies that have the alive property set to true
+	//enemiesArray = enemiesArray.filter(enemies => enemies.alive);
+	
+	// Reset the y property of the enemies in the filtered array to the initial enemiesY value
+	// enemiesArray.forEach((enemies, j) => {
+    // 	enemies.y = enemiesY + Math.floor(j / enemiesRows) * enemiesHeight;
+  	// });
+	reDrawTheEnemy();
 }
+
+function reDrawTheEnemy() {
+	enemiesArray.forEach((enemies) => {
+		enemies.y = enemiesY + Math.random() * enemiesHeight;
+		context.drawImage(enemiesImg, enemies.x, enemies.y, enemies.width, enemies.height);
+	});
+}
+
 function shoot(e) {
 	if (gameOver) {
 		return;
@@ -220,6 +241,7 @@ function shoot(e) {
 function detectCollisionBullet(a, b) {
 	return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
+
 function detectCollisionEnemies(a, b) {
 	return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
