@@ -42,6 +42,7 @@ let gameOver = false;
 let startTime = Date.now();
 let stopTime;
 let endTime = 0;
+let enemiesAvoided = 0;
 
 window.onload = function() {
 	board = document.getElementById("board");
@@ -65,6 +66,7 @@ window.onload = function() {
 }
 
 function update() {
+	console.log("function update");
 	requestAnimationFrame(update); //update your animation for the next repaint
 	if (gameOver) {
 		return;
@@ -103,9 +105,13 @@ function update() {
 	context.font = "20px courier";
 	context.fillText("in a number of seconds equal to " + endTime, 250, 20);
 
+	context.fillStyle = "blue";
+	context.font = "20px courier";
+	context.fillText("Enemies avoided " + enemiesAvoided, 5, 45);
+
 	context.fillStyle = "green";
 	context.font = "20px courier";
-	context.fillText("Enemies left " + enemiesCount, 5, 45);
+	context.fillText("Enemies in the air " + enemiesCount, 5, 70);
 }
 
 function drawTheEnemy() {
@@ -116,8 +122,8 @@ function drawTheEnemy() {
 			context.drawImage(enemiesImg, enemies.x, enemies.y, enemies.width, enemies.height);
 		}
 		if (enemies.y >= plane.y) {
+			enemiesAvoided += enemiesCount;
 			filterAndResetEnemies();
-			//reDrawTheEnemy();
 		}
 	}
 }
@@ -159,6 +165,19 @@ function enemiesCollision() {
 	}
 }
 
+function filterAndResetEnemies() {
+	// Filter the enemiesArray to keep only those enemies that have the alive property set to true
+	enemiesArray = enemiesArray.filter(enemies => enemies.alive);
+	reDrawTheEnemy();
+}
+
+function reDrawTheEnemy() {
+	enemiesArray.forEach((enemies) => {
+		enemies.y = enemiesY + Math.random() * enemiesHeight;
+		context.drawImage(enemiesImg, enemies.x, enemies.y, enemies.width, enemies.height);
+	});
+}
+
 function movePlane(e) {
 	if (gameOver) {
 		return;
@@ -197,28 +216,10 @@ function createEnemies() {
 				height : enemiesHeight,
 				alive : true
 			}
-			enemiesArray.push(enemies);
+			enemiesArray.push(enemies)
 		}
 	}
 	enemiesCount = enemiesArray.length;
-}
-
-function filterAndResetEnemies() {
-	// Filter the enemiesArray to keep only those enemies that have the alive property set to true
-	//enemiesArray = enemiesArray.filter(enemies => enemies.alive);
-	
-	// Reset the y property of the enemies in the filtered array to the initial enemiesY value
-	// enemiesArray.forEach((enemies, j) => {
-    // 	enemies.y = enemiesY + Math.floor(j / enemiesRows) * enemiesHeight;
-  	// });
-	reDrawTheEnemy();
-}
-
-function reDrawTheEnemy() {
-	enemiesArray.forEach((enemies) => {
-		enemies.y = enemiesY + Math.random() * enemiesHeight;
-		context.drawImage(enemiesImg, enemies.x, enemies.y, enemies.width, enemies.height);
-	});
 }
 
 function shoot(e) {
