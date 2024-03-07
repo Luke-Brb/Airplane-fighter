@@ -66,7 +66,6 @@ window.onload = function() {
 }
 
 function update() {
-	console.log("function update");
 	requestAnimationFrame(update); //update your animation for the next repaint
 	if (gameOver) {
 		return;
@@ -191,7 +190,6 @@ function movePlane(e) {
 
 function startGame(e) {
 	if (e.code == 'KeyS' || e.code == 'Keys') {
-		console.log("S is press");
 		enemiesArray = [];
 		bulletArray = [];
 		enemiesRows = 2;
