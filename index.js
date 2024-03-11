@@ -214,7 +214,7 @@ function createEnemies() {
 				height : enemiesHeight,
 				alive : true
 			}
-			enemiesArray.push(enemies)
+			enemiesArray.push(enemies);
 		}
 	}
 	enemiesCount = enemiesArray.length;
