@@ -89,7 +89,6 @@ function update() {
 		//increase the number of enemies rows by 1
 		enemiesRows = Math.min(enemiesRows + 1, rows - 11); //generates the maximum limit of the rows enemy matrix
 		enemiesColumns = Math.min(enemiesColumns + 1, columns - 9); //generates the maximum limit of the columns enemy matrix
-		//enemiesVelocityY += 0.1 //optional - increase the enemy speed
 		enemiesArray = [];
 		bulletArray = [];
 		createEnemies();
@@ -225,7 +224,6 @@ function shoot(e) {
 		return;
 	}
 	if (e.code == 'Space') {
-		//shoot
 		let bullet = {
 			x : plane.x + planeWidth * 15 / 31,
 			y : plane.y,
@@ -238,9 +236,5 @@ function shoot(e) {
 }
 
 function detectCollisionBullet(a, b) {
-	return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-}
-
-function detectCollisionEnemies(a, b) {
 	return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
